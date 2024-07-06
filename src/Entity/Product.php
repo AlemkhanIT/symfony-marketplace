@@ -106,7 +106,6 @@ class Product
     public function setUserId(?User $user_id): static
     {
         $this->user_id = $user_id;
-
         return $this;
     }
 }

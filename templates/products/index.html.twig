@@ -3,11 +3,15 @@
 {% block title %}Hello ProductsController!{% endblock %}
 
 {% block body %}
-
-<div class="d-flex p-2 gap-3">
+    {% if app.user %}
+        <a href="/products/create" class="btn btn-primary">Create Product</a>
+    {% endif %}
+<div class="d-flex p-2 gap-3 flex-wrap">
     {% for product in products %}
-        <div class="card" style="width: 18rem;">
-            <img class="card-img-top" src="{{ product.imagePath }}" alt="Card image cap">
+        <div class="card" style="width: 18rem; max-height: 400px">
+            <div class="overflow-hidden h-50">
+                <img class="card-img-top img-fluid" src="{{ product.imagePath }}" alt="Card image cap">
+            </div>
             <div class="card-body">
                 <h5 class="card-title">{{ product.title }}</h5>
                 <p class="card-text">{{ product.description }}</p>
