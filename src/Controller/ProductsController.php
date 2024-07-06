@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class ProductsController extends AbstractController
 {
@@ -33,7 +34,9 @@ class ProductsController extends AbstractController
     #[Route('/products/create', name: 'app_create')]
     public function create(Request $request): Response
     {
-        // Set the user for the product
+        if (!$this->isGranted('ROLE_USER')) {
+            throw new AccessDeniedException('Access denied. You must be logged in.');
+        }
         $newProduct = new Product();
         $form = $this->createForm(ProductFormType::class, $newProduct);
         $form->handleRequest($request);
@@ -65,6 +68,89 @@ class ProductsController extends AbstractController
         }
         return $this->render('./products/create.html.twig', ['form' => $form->createView()]);
     }
+
+    #[Route('/products/edit/{id}', name: 'app_edit')]
+    public function edit($id, Request $request): Response
+    {
+        if (!$this->isGranted('ROLE_USER')) {
+            throw new AccessDeniedException('Access denied. You must be logged in.');
+        }
+        $repository = $this->em->getRepository(Product::class);
+        $product = $repository->find($id);
+        if (!$product) {
+            throw $this->createNotFoundException('The product does not exist');
+        }
+        // Ensure the current user is the creator of the product
+        $user = $this->security->getUser();
+        if ($product->getUserId() !== $user) {
+            throw new AccessDeniedException('You do not have permission to edit this product.');
+        }
+        $form = $this->createForm(ProductFormType::class, $product);
+        $form->handleRequest($request);
+        $imagePath = $form->get('imagePath')->getData();
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            if($imagePath) {
+                if($product->getImagePath() !== null){
+                    if (file_exists(
+                        $this->getParameter('kernel.project_dir') . $product->getImagePath()
+                    )) {
+                        $this->GetParameter('kernel.project_dir') . $product->getImagePath();
+                    }
+                }
+                $newFileName = uniqid() . '.' . $imagePath->guessExtension();
+
+                try {
+                    $imagePath->move(
+                        $this->getParameter('kernel.project_dir') . '/public/uploads',
+                        $newFileName
+                    );
+                } catch (FileException $e) {
+                    return new Response($e->getMessage());
+                }
+
+                $product->setImagePath('/uploads/' . $newFileName);
+                $this->em->flush();
+
+                return $this->redirectToRoute('app_products');
+            }else{
+                $product->setTitle($form->get('title')->getData());
+                $product->setPrice($form->get('price')->getData());
+                $product->setCategory($form->get('category')->getData());
+                $product->setDescription($form->get('description')->getData());
+
+                $this->em->flush();
+                return $this->redirectToRoute('app_products');
+            }
+        }
+        return $this->render('./products/edit.html.twig',
+            [
+                'product'=> $product,
+                'form' => $form->createView()
+            ]);
+    }
+
+    #[Route('/products/delete/{id}', name: 'app_delete')]
+    public function delete($id): Response
+    {
+        if (!$this->isGranted('ROLE_USER')) {
+            throw new AccessDeniedException('Access denied. You must be logged in.');
+        }
+        $repository = $this->em->getRepository(Product::class);
+        $product = $repository->find($id);
+        if (!$product) {
+            throw $this->createNotFoundException('The product does not exist');
+        }
+        // Ensure the current user is the creator of the product
+        $user = $this->security->getUser();
+        if ($product->getUserId() !== $user) {
+            throw new AccessDeniedException('You do not have permission to delete this product.');
+        }
+        $this->em->remove($product);
+        $this->em->flush();
+        return $this->redirectToRoute('app_products');
+    }
+
     #[Route(path: '/products/{id}', name: 'app_product')]
     public function show($id): Response
     {
