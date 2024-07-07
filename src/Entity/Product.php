@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ProductRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
@@ -32,6 +34,17 @@ class Product
     #[ORM\ManyToOne(inversedBy: 'products')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user_id = null;
+
+    /**
+     * @var Collection<int, BasketItem>
+     */
+    #[ORM\OneToMany(targetEntity: BasketItem::class, mappedBy: 'product', orphanRemoval: true)]
+    private Collection $basketItems;
+
+    public function __construct()
+    {
+        $this->basketItems = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -106,6 +119,36 @@ class Product
     public function setUserId(?User $user_id): static
     {
         $this->user_id = $user_id;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, BasketItem>
+     */
+    public function getBasketItems(): Collection
+    {
+        return $this->basketItems;
+    }
+
+    public function addBasketItem(BasketItem $basketItem): static
+    {
+        if (!$this->basketItems->contains($basketItem)) {
+            $this->basketItems->add($basketItem);
+            $basketItem->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBasketItem(BasketItem $basketItem): static
+    {
+        if ($this->basketItems->removeElement($basketItem)) {
+            // set the owning side to null (unless already changed)
+            if ($basketItem->getProduct() === $this) {
+                $basketItem->setProduct(null);
+            }
+        }
+
         return $this;
     }
 }
