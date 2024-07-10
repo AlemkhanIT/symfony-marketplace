@@ -24,10 +24,6 @@ class Product
     #[ORM\Column]
     private ?int $price = null;
 
-    #[ORM\ManyToOne(inversedBy: 'products')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Category $category = null;
-
     #[ORM\Column(length: 255)]
     private ?string $imagePath = null;
 
@@ -36,14 +32,16 @@ class Product
     private ?User $user_id = null;
 
     /**
-     * @var Collection<int, BasketItem>
+     * @var Collection<int, OrderItem>
      */
-    #[ORM\OneToMany(targetEntity: BasketItem::class, mappedBy: 'product', orphanRemoval: true)]
-    private Collection $basketItems;
+    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'product')]
+    private Collection $orderItems;
+
+
 
     public function __construct()
     {
-        $this->basketItems = new ArrayCollection();
+        $this->orderItems = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -87,17 +85,7 @@ class Product
         return $this;
     }
 
-    public function getCategory(): ?Category
-    {
-        return $this->category;
-    }
 
-    public function setCategory(?Category $category): static
-    {
-        $this->category = $category;
-
-        return $this;
-    }
 
     public function getImagePath(): ?string
     {
@@ -123,29 +111,29 @@ class Product
     }
 
     /**
-     * @return Collection<int, BasketItem>
+     * @return Collection<int, OrderItem>
      */
-    public function getBasketItems(): Collection
+    public function getOrderItems(): Collection
     {
-        return $this->basketItems;
+        return $this->orderItems;
     }
 
-    public function addBasketItem(BasketItem $basketItem): static
+    public function addOrderItem(OrderItem $orderItem): static
     {
-        if (!$this->basketItems->contains($basketItem)) {
-            $this->basketItems->add($basketItem);
-            $basketItem->setProduct($this);
+        if (!$this->orderItems->contains($orderItem)) {
+            $this->orderItems->add($orderItem);
+            $orderItem->setProduct($this);
         }
 
         return $this;
     }
 
-    public function removeBasketItem(BasketItem $basketItem): static
+    public function removeOrderItem(OrderItem $orderItem): static
     {
-        if ($this->basketItems->removeElement($basketItem)) {
+        if ($this->orderItems->removeElement($orderItem)) {
             // set the owning side to null (unless already changed)
-            if ($basketItem->getProduct() === $this) {
-                $basketItem->setProduct(null);
+            if ($orderItem->getProduct() === $this) {
+                $orderItem->setProduct(null);
             }
         }
 

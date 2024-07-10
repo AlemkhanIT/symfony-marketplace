@@ -20,8 +20,6 @@ class BasketItem
     #[ORM\JoinColumn(nullable: false)]
     private ?Product $product = null;
 
-    #[ORM\Column]
-    private ?int $quantity = null;
 
     public function getId(): ?int
     {
@@ -52,15 +50,4 @@ class BasketItem
         return $this;
     }
 
-    public function getQuantity(): ?int
-    {
-        return $this->quantity;
-    }
-
-    public function setQuantity(int $quantity): static
-    {
-        $this->quantity = $quantity;
-
-        return $this;
-    }
 }

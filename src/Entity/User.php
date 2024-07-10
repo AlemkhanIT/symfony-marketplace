@@ -41,11 +41,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Product::class, mappedBy: 'user_id')]
     private Collection $products;
 
-    /**
-     * @var Collection<int, Basket>
-     */
-    #[ORM\OneToMany(targetEntity: Basket::class, mappedBy: 'user', orphanRemoval: true)]
-    private Collection $baskets;
 
     /**
      * @var Collection<int, Order>
@@ -53,11 +48,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'buyer')]
     private Collection $orders;
 
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?Basket $basket = null;
+
 
     public function __construct()
     {
         $this->products = new ArrayCollection();
-        $this->baskets = new ArrayCollection();
         $this->orders = new ArrayCollection();
     }
 
@@ -166,35 +163,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Basket>
-     */
-    public function getBaskets(): Collection
-    {
-        return $this->baskets;
-    }
 
-    public function addBasket(Basket $basket): static
-    {
-        if (!$this->baskets->contains($basket)) {
-            $this->baskets->add($basket);
-            $basket->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeBasket(Basket $basket): static
-    {
-        if ($this->baskets->removeElement($basket)) {
-            // set the owning side to null (unless already changed)
-            if ($basket->getUser() === $this) {
-                $basket->setUser(null);
-            }
-        }
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, Order>
@@ -222,6 +191,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $order->setBuyer(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getBasket(): ?Basket
+    {
+        return $this->basket;
+    }
+
+    public function setBasket(?Basket $basket): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($basket === null && $this->basket !== null) {
+            $this->basket->setUser(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($basket !== null && $basket->getUser() !== $this) {
+            $basket->setUser($this);
+        }
+
+        $this->basket = $basket;
 
         return $this;
     }

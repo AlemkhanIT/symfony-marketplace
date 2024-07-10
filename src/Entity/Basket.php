@@ -15,18 +15,14 @@ class Basket
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'baskets')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
-
-    #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
-
     /**
      * @var Collection<int, BasketItem>
      */
     #[ORM\OneToMany(targetEntity: BasketItem::class, mappedBy: 'basket')]
     private Collection $basketItems;
+
+    #[ORM\OneToOne(inversedBy: 'basket', cascade: ['persist', 'remove'])]
+    private ?User $user = null;
 
     public function __construct()
     {
@@ -38,29 +34,6 @@ class Basket
         return $this->id;
     }
 
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): static
-    {
-        $this->user = $user;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, BasketItem>
@@ -88,6 +61,18 @@ class Basket
                 $basketItem->setBasket(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }
