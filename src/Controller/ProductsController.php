@@ -116,7 +116,6 @@ class ProductsController extends AbstractController
             }else{
                 $product->setTitle($form->get('title')->getData());
                 $product->setPrice($form->get('price')->getData());
-                $product->setCategory($form->get('category')->getData());
                 $product->setDescription($form->get('description')->getData());
 
                 $this->em->flush();

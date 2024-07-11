@@ -21,7 +21,6 @@ class ProductsFixtures extends Fixture implements DependentFixtureInterface
          $product->setDescription('World');
          $product->setPrice(1000);
          $product->setImagePath('https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg');
-         $product->setCategory($this->getReference('category1'));
          $product->setUserId($this->getReference('user'));
 
          $manager->persist($product);
@@ -31,7 +30,6 @@ class ProductsFixtures extends Fixture implements DependentFixtureInterface
         $product2->setDescription('World2');
         $product2->setPrice(1002);
         $product2->setImagePath('https://www.simplilearn.com/ice9/free_resources_article_thumb/what_is_image_Processing.jpg');
-        $product2->setCategory($this->getReference('category1'));
         $product2->setUserId($this->getReference('user'));
         $manager->persist($product2);
 
@@ -40,7 +38,6 @@ class ProductsFixtures extends Fixture implements DependentFixtureInterface
         $product3->setDescription('Hellp');
         $product3->setPrice(1);
         $product3->setImagePath('https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg');
-        $product3->setCategory($this->getReference('category2'));
         $product3->setUserId($this->getReference('user'));
         $manager->persist($product3);
 
@@ -51,7 +48,6 @@ class ProductsFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             UserFixtures::class,
-            CategoryFixtures::class,
         ];
     }
 }

@@ -9,17 +9,18 @@
             <article>
                 <header class="mb-4">
                     <h1 class="fw-bolder mb-1"><h1>{{product.title}}</h1></h1>
-                    <p class="badge bg-secondary text-decoration-none link-light">{{ product.category.title }}</p>
                 </header>
                 <figure class="mb-4"><img class="img-fluid rounded" src="{{ product.imagePath }}" alt="..." /></figure>
                 <section class="mb-5">
                     <p class="fs-5 mb-4">{{ product.description }}</p>
                 </section>
                 <section class="mb-5">
+                    {% if app.user and app.user != product.userId %}
+                        <button class="btn btn-success add-to-basket" data-product-id="{{ product.id }}">Add to Basket</button>
+                    {% endif %}
                     {% if app.user and product.userId == app.user  %}
                         <a href="/products/edit/{{ product.id }}" class="btn btn-primary">Edit Product</a>
                         <a href="/products/delete/{{ product.id }}" class="btn btn-danger">Delete Product</a>
-
                     {% endif %}
                 </section>
             </article>

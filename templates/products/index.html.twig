@@ -16,8 +16,12 @@
                 <h5 class="card-title">{{ product.title }}</h5>
                 <p class="card-text">{{ product.description }}</p>
                 <a href="/products/{{ product.id }}" class="btn btn-primary">More Information</a>
+                {% if app.user and app.user != product.userId %}
+                    <button class="btn btn-success add-to-basket" data-product-id="{{ product.id }}">Add to Basket</button>
+                {% endif %}
             </div>
         </div>
     {% endfor %}
 </div>
 {% endblock %}
+

@@ -10,6 +10,36 @@
 
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const addToBasketButtons = document.querySelectorAll('.add-to-basket');
+                    addToBasketButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const productId = this.getAttribute('data-product-id');
+                            fetch('/basket/add', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token('basket_add') }}'
+                                },
+                                body: JSON.stringify({ product_id: productId })
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.message) {
+                                        alert(data.message);
+                                    } else if (data.error) {
+                                        alert('Error: ' + data.error);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    alert('An error occurred while adding the product to the basket.');
+                                });
+                        });
+                    });
+                });
+            </script>
         {% endblock %}
     </head>
     <body>
