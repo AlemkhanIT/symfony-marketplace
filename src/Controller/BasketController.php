@@ -19,7 +19,22 @@ class BasketController extends AbstractController
         $this->em = $em;
     }
 
-    #[Route('/basket/add', name: 'app_basket', methods: ['POST'])]
+    #[Route('/basket', name: 'get_basket', methods: ['GET'])]
+    public function getBasket(EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(["message" => "User must be authenticated"], 401);
+        }
+
+        $basket = $user->getBasket();
+        $items = $basket ? $basket->getBasketItems()->toArray() : [];
+
+        return $this->render('basket/index.html.twig', [
+            'items' => $items,
+        ]);
+    }
+    #[Route('/basket/add', name: 'app_basketAdd', methods: ['POST'])]
     public function add(Request $request): Response
     {
         $data = json_decode($request->getContent(), true);
@@ -34,7 +49,7 @@ class BasketController extends AbstractController
 
         $user = $this->getUser();
         if(!$user){
-            return $this->json(['error'=>'User must be authenticated']);
+            return $this->json(['error'=>'User must be authenticated'], 401);
         }
         $basket = $user->getBasket();
         if (!$basket) {
@@ -50,5 +65,29 @@ class BasketController extends AbstractController
         $this->em->persist($basketItem);
         $this->em->flush();
         return $this->json(['message' => 'Product added to basket successfully'], 201);
+    }
+
+    #[Route('/basket/remove/{id}', name: 'rm_basketItem')]
+    public function remove($id): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'User not authenticated'], 401);
+        }
+
+        $basketItem = $this->em->getRepository(BasketItem::class)->find($id);
+
+        if (!$basketItem) {
+            return $this->json(['error' => 'Basket item not found'], 404);
+        }
+
+        if ($basketItem->getBasket()->getUser() !== $user) {
+            return $this->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $this->em->remove($basketItem);
+        $this->em->flush();
+
+        return $this->json(['message' => 'Item removed from basket successfully']);
     }
 }

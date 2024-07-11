@@ -8,13 +8,19 @@
     .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
 </style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+<div class="d-flex p-2 gap-3 flex-wrap">
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>/Users/mbpro/PhpstormProjects/untitled/src/Controller/BasketController.php</code></li>
-        <li>Your template at <code>/Users/mbpro/PhpstormProjects/untitled/templates/basket/index.html.twig</code></li>
-    </ul>
+    {% for item in items %}
+        <div class="card" style="width: 18rem; max-height: 400px">
+            <div class="overflow-hidden h-50">
+                <img class="card-img-top img-fluid" src="{{ item.product.imagePath }}" alt="Card image cap">
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ item.product.title }}</h5>
+                <p class="card-text">{{ item.product.description }}</p>
+                <button class="btn btn-danger remove" data-basket-id="{{ item.id }}">Remove from Basket</button>
+            </div>
+        </div>
+    {% endfor %}
 </div>
 {% endblock %}

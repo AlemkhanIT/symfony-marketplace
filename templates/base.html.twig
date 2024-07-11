@@ -12,6 +12,41 @@
             {{ encore_entry_script_tags('app') }}
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
+                    const removeFromBasketButtons = document.querySelectorAll('.remove');
+                    removeFromBasketButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const basketId = this.getAttribute('data-basket-id');
+                            if (confirm('Are you sure you want to remove this item from your basket?')) {
+                                fetch(`/basket/remove/${basketId}`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token('remove_from_basket') }}'
+                                    }
+                                })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.message) {
+                                            alert(data.message);
+                                            // Remove the card from the UI
+                                            const card = this.closest('.card');
+                                            card.remove();
+                                            // Check if basket is empty
+                                            const basketContainer = document.getElementById('basket-items-container');
+                                            if (basketContainer.children.length === 0) {
+                                                basketContainer.innerHTML = '<p>Your basket is empty.</p>';
+                                            }
+                                        } else if (data.error) {
+                                            alert('Error: ' + data.error);
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error:', error);
+                                    });
+                            }
+                        });
+                    });
+
                     const addToBasketButtons = document.querySelectorAll('.add-to-basket');
                     addToBasketButtons.forEach(button => {
                         button.addEventListener('click', function() {
@@ -59,10 +94,14 @@
                             <a class="nav-link" href="/products">Products</a>
                         </li>
                     </ul>
+                    {% if app.user %}
+                        <a class="ms-1 btn btn-outline-success" href="{{ path('get_basket')}}" @click="isOpen = false">Basket</a>
+                    {% endif %}
                      <a class="btn btn-outline-success" href="{{ app.user? path('app_logout'): path('app_login') }}" @click="isOpen = false">{{ app.user? 'Logout': 'Login' }}</a>
                     {% if not app.user %}
                         <a class="ms-1 btn btn-outline-success" href="{{ path('app_register')}}" @click="isOpen = false">Register</a>
                     {% endif %}
+
                 </div>
             </div>
         </nav>
